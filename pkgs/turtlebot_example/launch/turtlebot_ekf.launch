@@ -1,0 +1,8 @@
+<launch>
+    <node pkg="turtlebot_example" type="icp_converter_node" name="icp_converter" output="screen">
+        <param name="use_sim" type="bool" value="true"/>
+    </node>
+    <node pkg="turtlebot_example" type="ekf_node" name="turtlebot_ekf" output="screen">
+        <param name="dt" type="double" value="0.1"/>
+    </node>
+</launch>

@@ -36,7 +36,6 @@ void pose_sim_callback(const gazebo_msgs::ModelStates& msg) {
 void noisy_pose_callback(const geometry_msgs::PoseStamped& msg) {
     geometry_msgs::PoseStamped noisy_msg = msg;
     // TODO: add noise
-
     noisy_pose_publisher.publish(noisy_msg);
 }
 

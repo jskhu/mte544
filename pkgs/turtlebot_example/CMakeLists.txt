@@ -125,6 +125,10 @@ add_executable(icp_converter_node
   src/icp_converter.cpp
 )
 
+add_executable(ekf_node
+  src/ekf.cpp
+)
+
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(turtlebot_example_node turtlebot_example_generate_messages_cpp)
@@ -139,6 +143,10 @@ target_link_libraries(occ_example_node
 )
 
 target_link_libraries(icp_converter_node
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(ekf_node
   ${catkin_LIBRARIES}
 )
 
