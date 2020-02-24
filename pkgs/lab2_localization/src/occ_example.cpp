@@ -19,6 +19,8 @@
 #include <sensor_msgs/LaserScan.h>
 #include <tf/transform_datatypes.h>
 
+#include "OccGrid.hpp"
+
 using namespace std;
 using namespace Eigen;
 
@@ -69,22 +71,19 @@ int main(int argc, char **argv)
 
    ros::Subscriber scan_subscriber = n.subscribe("/scan", 1, scan_callback);
 
-   // Velocity control variable
-   nav_msgs::MapMetaData meta_data;
-   nav_msgs::OccupancyGrid occ_grid;
+   OccGrid occ_grid(3.0f, 3.0f, 1.0f, Eigen::Vector3f(0,0,0));
+   occ_grid.init_publisher(n, "/occ");
 
-   meta_data.height = 3;
-   meta_data.width = 3;
-   meta_data.resolution = 1.0f;
-   meta_data.origin = geometry_msgs::Pose();
-   occ_grid.info = meta_data;
-   occ_grid.data.resize(9);
-   // int foo[] = {255, 0, 0,
-   //              0, 0, 255,
-   //              255, 255, 0};
-   // for (int i = 0; i < 9; ++i) {
-   //     occ_grid.data.push_back(foo[i]);
-   // }
+   // occ_grid.data.resize(9);
+   int foo[] = {100, 0, 0,
+                0, 0, 100,
+                100, 100, 0};
+   for (int i = 0; i < 3; ++i) {
+      for (int j = 0; j < 3; ++j) {
+         ROS_INFO_STREAM(foo[i*3 + j]);
+         occ_grid[Eigen::Vector2i(j, i)] = foo[i * 3 + j];
+      }
+   }
 
    // Set the loop rate`
    ros::Rate loop_rate(20); // 20Hz update rate
@@ -95,7 +94,7 @@ int main(int argc, char **argv)
       ros::spinOnce();   // Check for new messages
 
       // Draw Curves
-      occ_publisher.publish(occ_grid);
+      occ_grid.publish();
    }
 
    return 0;

@@ -110,9 +110,9 @@ include_directories(
 )
 
 ## Declare a cpp library
-# add_library(turtlebot_example
-#   src/${PROJECT_NAME}/turtlebot_example.cpp
-# )
+add_library(OccGrid
+  src/OccGrid.cpp
+)
 
 ## Declare a cpp executable
 add_executable(occ_example_node
@@ -126,6 +126,7 @@ add_executable(occ_example_node
 
 target_link_libraries(occ_example_node
   ${catkin_LIBRARIES}
+  OccGrid
 )
 
 #############
