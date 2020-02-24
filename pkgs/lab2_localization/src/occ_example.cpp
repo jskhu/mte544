@@ -24,12 +24,6 @@
 ros::Publisher pose_publisher;
 tf::Transform world_t_robot;
 
-enum UpdateState : int {
-  UNKNOWN,
-  FREE,
-  OCCUPIED,
-};
-
 // function for line generation from
 // https://www.geeksforgeeks.org/bresenhams-line-generation-algorithm/
 std::vector<Eigen::Vector2i> get_bresenham_points(int x1, int y1, int x2,
@@ -96,7 +90,12 @@ int main(int argc, char **argv) {
   ros::Subscriber pose_subscriber =
       n.subscribe("/indoor_pos", 1, pose_callback);
 
-  OccGrid occ_grid(3.0f, 3.0f, 1.0f, Eigen::Vector3f(0, 0, 0));
+   std::map<UpdateState, float> update_states;
+   update_states[UNKNOWN] = 0.5;
+   update_states[FREE] = 0.3;
+   update_states[OCCUPIED] = 0.7;
+
+  OccGrid occ_grid(3.0f, 3.0f, 1.0f, Eigen::Vector3f(0, 0, 0), update_states);
   occ_grid.init_publisher(n, "/occ");
 
   // occ_grid.data.resize(9);
