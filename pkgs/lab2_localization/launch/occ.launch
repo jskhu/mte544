@@ -1,0 +1,8 @@
+<launch>
+    <node pkg="tf" type="static_transform_publisher" name="world_to_map"
+            args="0 0  0  0 0 0  world /map 100" />
+    <node pkg="tf" type="static_transform_publisher" name="map_to_odom"
+            args="0 0  0  0 0 0  /map /odom 100" />
+    <node pkg="lab2_localization" type="occ_example_node" name="occ_example" output="screen">
+    </node>
+</launch>
