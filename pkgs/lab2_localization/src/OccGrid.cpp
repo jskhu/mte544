@@ -64,7 +64,7 @@ void OccGrid::publish() {
 bool OccGrid::convert_to_occ_coords(double x_world, double y_world, Eigen::Vector2i& point_occ) {
     double x_occ = x_world - m_origin[0];
     double y_occ = y_world - m_origin[1];
-    ROS_INFO_STREAM("x_occ: " << x_occ << " y_occ: " << y_occ);
+    // ROS_INFO_STREAM("x_occ: " << x_occ << " y_occ: " << y_occ);
     if (x_occ < 0 || x_occ > m_width) {
         return false;
     }

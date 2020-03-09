@@ -89,6 +89,9 @@ void scan_callback(const sensor_msgs::LaserScan::ConstPtr &msg) {
     if (std::isnan(msg->ranges[i])) {
       continue;
     }
+    if (msg->ranges[i] < msg->range_min || msg->ranges[i] > msg->range_max){
+      continue;
+    }
     float cur_angle = msg->angle_min + msg->angle_increment * i;
 
     float x = msg->ranges[i] * cos(cur_angle);
@@ -100,27 +103,22 @@ void scan_callback(const sensor_msgs::LaserScan::ConstPtr &msg) {
 
     tf::Transform world_t_laser = world_t_robot * robot_t_laser;
 
-    // TODO: Add bresenham, hack for now
     double cur_origin_x = cur_origin.getX();
     double cur_origin_y = cur_origin.getY();
     double laser_x = world_t_laser.getOrigin().getX();
     double laser_y = world_t_laser.getOrigin().getY();
 
-    std::vector<Eigen::Vector2i> points = get_bresenham_points(cur_origin_x,
-    cur_origin_y, laser_x, laser_y);
-
-    for (int i = 0; i < points.size() - 1; i++) {
-      Eigen::Vector2i point;
-      if (occ_grid.convert_to_occ_coords(points[i].x(), points[i].y(),
-                                         point)) {
-        occ_grid.update_pixel(point, FREE);
+    Eigen::Vector2i occ_cur_origin;
+    Eigen::Vector2i occ_laser;
+    if (occ_grid.convert_to_occ_coords(cur_origin_x, cur_origin_y,
+                                       occ_cur_origin) &&
+        occ_grid.convert_to_occ_coords(laser_x, laser_y, occ_laser)) {
+      std::vector<Eigen::Vector2i> points = get_bresenham_points(
+          occ_cur_origin.x(), occ_cur_origin.y(), occ_laser.x(), occ_laser.y());
+      for (int i = 0; i < points.size() - 1; i++) {
+        occ_grid.update_pixel(points[i], FREE);
       }
-    }
-    Eigen::Vector2i point;
-    if (occ_grid.convert_to_occ_coords(points[points.size() - 1].x(),
-                                       points[points.size() - 1].y(),
-                                       point)) {
-      occ_grid.update_pixel(point, OCCUPIED);
+      occ_grid.update_pixel(points[points.size() - 1], OCCUPIED);
     }
   }
 }
@@ -141,8 +139,8 @@ int main(int argc, char **argv) {
   // For some reason, can't add members to update states outside function
   // Add here instead
   update_states[UNKNOWN] = 0.5;
-  update_states[FREE] = 0.3;
-  update_states[OCCUPIED] = 0.6;
+  update_states[FREE] = 0.4;
+  update_states[OCCUPIED] = 0.7;
   occ_grid.init_publisher(n, "/occ");
 
   // Set the loop rate`
