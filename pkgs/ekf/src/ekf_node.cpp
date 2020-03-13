@@ -27,6 +27,7 @@
 
 #define USE_IPS
 #define PUBLISH_MARKER
+#define PUBLISH_POSE
 
 class EKFNode
 {
@@ -42,8 +43,12 @@ class EKFNode
 #endif
 #ifdef PUBLISH_MARKER
         ekf_pub = nh->advertise<visualization_msgs::Marker>("/ekf_result", 1, this);
+        ekf_pub_mm = nh->advertise<visualization_msgs::Marker>("/ekf_result_mm", 1, this);
         ekf_conf_pub = nh->advertise<visualization_msgs::Marker>("/ekf_result_conf", 1, this);
         initMarker();
+#endif
+#ifdef PUBLISH_POSE
+        pose_pub = nh->advertise<geometry_msgs::PoseWithCovarianceStamped>("/ekf_pose", 1, this);
 #endif
     }
   private:
@@ -67,7 +72,36 @@ class EKFNode
     std::default_random_engine generator;
     std::normal_distribution<double> distribution;
 
+#ifdef PUBLISH_POSE
+    ros::Publisher pose_pub;
+
+    void publishPose(){
+        geometry_msgs::Point point;
+        point.x = ekf.x(0);
+        point.y = ekf.x(1);
+
+        geometry_msgs::PoseWithCovarianceStamped msg;
+        msg.pose.pose.position = point;
+        msg.pose.pose.orientation = tf::createQuaternionMsgFromYaw(ekf.x(2));
+        msg.pose.covariance[0] = ekf.P(0,0);
+        msg.pose.covariance[1] = ekf.P(0,1);
+        msg.pose.covariance[5] = ekf.P(0,2);
+        msg.pose.covariance[6] = ekf.P(1,0);
+        msg.pose.covariance[7] = ekf.P(1,1);
+        msg.pose.covariance[11] = ekf.P(1,2);
+        msg.pose.covariance[30] = ekf.P(2,0);
+        msg.pose.covariance[31] = ekf.P(2,1);
+        msg.pose.covariance[35] = ekf.P(2,2);
+        msg.header.stamp = ros::Time::now();
+        msg.header.frame_id = "odom";
+        pose_pub.publish(msg);
+    }
+#endif
+
 #ifdef PUBLISH_MARKER
+    ros::Publisher ekf_pub_mm;
+    visualization_msgs::Marker trajectory_mm;
+
     ros::Publisher ekf_pub;
     visualization_msgs::Marker trajectory;
 
@@ -83,9 +117,20 @@ class EKFNode
         trajectory.color.r = 1.0f;
         trajectory.color.g = 0.0f;
         trajectory.color.b = 0.0f;
-        trajectory.color.a = 0.8;
+        trajectory.color.a = 0.5;
         trajectory.scale.x = 0.01;
         trajectory.scale.y = 0.01;
+
+        trajectory_mm.header.frame_id = "odom";
+        trajectory_mm.ns = "ekf_trajectory";
+        trajectory_mm.id = 1;
+        trajectory_mm.type = visualization_msgs::Marker::POINTS;
+        trajectory_mm.color.r = 0.0f;
+        trajectory_mm.color.g = 1.0f;
+        trajectory_mm.color.b = 1.0f;
+        trajectory_mm.color.a = 0.5;
+        trajectory_mm.scale.x = 0.01;
+        trajectory_mm.scale.y = 0.01;
 
         confidence.header.frame_id = "odom";
         confidence.ns = "ekf_confidence";
@@ -95,6 +140,15 @@ class EKFNode
         confidence.color.g = 0.5f;
         confidence.color.b = 0.5f;
         confidence.color.a = 0.4;
+    }
+
+    void updateMarker1()
+    {
+        trajectory_mm.header.stamp = ros::Time::now();
+        geometry_msgs::Point p;
+        p.x = ekf.x(0);
+        p.y = ekf.x(1);
+        trajectory_mm.points.push_back(p);
     }
 
     void updateMarker()
@@ -129,7 +183,7 @@ class EKFNode
         R_odom << msg->pose.covariance[0], msg->pose.covariance[1], msg->pose.covariance[5],
              msg->pose.covariance[6], msg->pose.covariance[7], msg->pose.covariance[11],
              msg->pose.covariance[30], msg->pose.covariance[31], msg->pose.covariance[35];
-        R_odom *= 2.0;
+        R_odom *= 3.0;
 
         if (ekf.state == KFStates::START)
         {
@@ -150,6 +204,10 @@ class EKFNode
             Eigen::Vector2d u;
             u << msg->linear.x, msg->angular.z;
             ekf.predict(dt, u);
+#ifdef PUBLISH_MARKER
+            updateMarker1();
+            ekf_pub_mm.publish(trajectory_mm);
+#endif
             if (have_ips)
             {
                 ekf.update(y_ips, R_ips);
@@ -160,7 +218,10 @@ class EKFNode
 #ifdef PUBLISH_MARKER
             updateMarker();
             ekf_pub.publish(trajectory);
-            ekf_conf_pub.publish(confidence);
+            //ekf_conf_pub.publish(confidence);
+#endif
+#ifdef PUBLISH_POSE
+            publishPose();
 #endif
         }
     }

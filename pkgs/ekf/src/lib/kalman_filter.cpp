@@ -6,8 +6,8 @@
 //using namespace std;
 
 KalmanFilter::KalmanFilter():
-  R((Eigen::Matrix3d() << 0.1, 0, 0,
-                          0, 0.1, 0,
+  R((Eigen::Matrix3d() << 0.15, 0, 0,
+                          0, 0.15, 0,
                           0, 0, 0.1).finished()),
   H(Eigen::Matrix3d::Identity()),
   state(KFStates::START)

@@ -19,7 +19,8 @@ class FixedIPS
   private:
     ros::Publisher fixed_ips_pub;
 #ifdef PUBLISH_PATH
-    ros::Publisher path_pub;
+    ros::Publisher gt_path_pub;
+    ros::Publisher odom_path_pub;
 #endif
     ros::Subscriber ips_sub;
     ros::Subscriber odom_sub;
@@ -27,7 +28,8 @@ class FixedIPS
     std::string frame_id;
     tf::Pose odom_t_robot;
     tf::Transform odom_t_ips;
-    nav_msgs::Path path_msg;
+    nav_msgs::Path gt_path_msg;
+    nav_msgs::Path odom_path_msg;
 
     bool odomReady;
     bool haveTransform;
@@ -36,7 +38,8 @@ class FixedIPS
     {
         fixed_ips_pub = nh->advertise<geometry_msgs::PoseWithCovarianceStamped>("/fixed_ips", 1, this);
 #ifdef PUBLISH_PATH
-        path_pub = nh->advertise<nav_msgs::Path>("/robot_path", 1, this);
+        gt_path_pub = nh->advertise<nav_msgs::Path>("/robot_path", 1, this);
+        odom_path_pub = nh->advertise<nav_msgs::Path>("/odom_path", 1, this);
 #endif
         odom_sub = nh->subscribe("/odom", 1, &FixedIPS::odomCallback, this);
         ips_sub = nh->subscribe("/indoor_pos", 1, &FixedIPS::ipsCallback, this);
@@ -47,12 +50,17 @@ class FixedIPS
 
     void odomCallback(const nav_msgs::Odometry::ConstPtr &msg)
     {
-        if (!haveTransform)
-        {
-            odomReady = true;
-            tf::poseMsgToTF(msg->pose.pose, odom_t_robot);
-            frame_id = msg->header.frame_id;
-        }
+        odomReady = true;
+        tf::poseMsgToTF(msg->pose.pose, odom_t_robot);
+        frame_id = msg->header.frame_id;
+#ifdef PUBLISH_PATH
+        odom_path_msg.header = msg->header;
+        geometry_msgs::PoseStamped ps;
+        ps.header = msg->header;
+        ps.pose = msg->pose.pose;
+        odom_path_msg.poses.push_back(ps);
+        odom_path_pub.publish(odom_path_msg);
+#endif
     }
 
     void ipsCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg)
@@ -81,12 +89,12 @@ class FixedIPS
             fixed_ips_pub.publish(new_msg);
 #ifdef PUBLISH_PATH
             new_msg.header.stamp = ros::Time::now();
-            path_msg.header = new_msg.header;
+            gt_path_msg.header = new_msg.header;
             geometry_msgs::PoseStamped ps;
             ps.header = new_msg.header;
             ps.pose = new_msg.pose.pose;
-            path_msg.poses.push_back(ps);
-            path_pub.publish(path_msg);
+            gt_path_msg.poses.push_back(ps);
+            gt_path_pub.publish(gt_path_msg);
 #endif
         }
     }
