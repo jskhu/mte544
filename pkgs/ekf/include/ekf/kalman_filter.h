@@ -29,15 +29,13 @@ public:
     // Destructor
     virtual ~KalmanFilter();
 
-    void init(const Eigen::Vector3d &z, const Eigen::Matrix3d &R);
+    void init(const Eigen::Vector3d &z, const Eigen::Matrix3d &Q);
 
     void predict(float dt, const Eigen::Vector2d &u); // Motion model predictions
 
     // Measurment (z at t+1) model predictions
     void update(const Eigen::Vector3d &z,
-                const Eigen::Matrix3d &R);
-
-    geometry_msgs::PoseWithCovariance createMessage();
+                const Eigen::Matrix3d &Q);
 
 private:
 
@@ -45,7 +43,7 @@ private:
     //Eigen::Matrix3d F;
 
     // process covariance matrix
-    const Eigen::Matrix3d Q;
+    const Eigen::Matrix3d R;
 
     // measurement matrix
     const Eigen::Matrix3d H;

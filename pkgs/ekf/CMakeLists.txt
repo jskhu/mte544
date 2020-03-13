@@ -108,6 +108,12 @@ include_directories(
    src/lib/kalman_filter.cpp
  )
 
+ add_executable(path_node src/path_node.cpp)
+
+ target_link_libraries(path_node
+   ${catkin_LIBRARIES}
+ )
+
 ## Declare a cpp executable
  add_executable(ekf_node src/ekf_node.cpp)
 
