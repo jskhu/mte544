@@ -118,6 +118,9 @@ add_library(OccGrid
 add_executable(occ_example_node
   src/occ_example.cpp
 )
+add_executable(icp_converter_node
+  src/icp_converter.cpp
+)
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(turtlebot_example_node turtlebot_example_generate_messages_cpp)
@@ -127,6 +130,10 @@ add_executable(occ_example_node
 target_link_libraries(occ_example_node
   ${catkin_LIBRARIES}
   OccGrid
+)
+
+target_link_libraries(icp_converter_node
+  ${catkin_LIBRARIES}
 )
 
 #############
