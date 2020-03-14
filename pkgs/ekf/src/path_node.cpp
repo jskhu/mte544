@@ -74,7 +74,6 @@ class FixedIPS
                 tf::Pose ips_t_robot;
                 tf::poseMsgToTF(new_msg.pose.pose, ips_t_robot);
                 odom_t_ips = odom_t_robot * ips_t_robot.inverse();
-                //odom_t_ips = odom_t_robot.inverseTimes(ips_t_robot);
                 haveTransform = true;
             }
         }
@@ -82,7 +81,6 @@ class FixedIPS
         {
             tf::Pose ips_t_robot_truth;
             tf::poseMsgToTF(new_msg.pose.pose, ips_t_robot_truth);
-            //tf::Pose odom_t_robot_truth = ips_t_robot_truth * odom_t_ips;
             tf::Pose odom_t_robot_truth = odom_t_ips * ips_t_robot_truth;
             tf::poseTFToMsg(odom_t_robot_truth, new_msg.pose.pose);
             new_msg.header.frame_id = frame_id;

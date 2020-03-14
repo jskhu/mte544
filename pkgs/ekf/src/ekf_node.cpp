@@ -6,6 +6,7 @@
 #include <ros/ros.h>
 #include <tf/transform_datatypes.h>
 #include <visualization_msgs/Marker.h>
+#include <std_msgs/Float32.h>
 #include <Eigen/Dense>
 
 #include <ekf/kalman_filter.h>
@@ -28,6 +29,7 @@
 #define USE_IPS
 #define PUBLISH_MARKER
 #define PUBLISH_POSE
+#define PUBLISH_ERROR
 
 class EKFNode
 {
@@ -41,9 +43,12 @@ class EKFNode
 #ifdef USE_IPS
         ips_sub = nh->subscribe("/fixed_ips", 1, &EKFNode::ipsCallback, this);
 #endif
+#ifdef PUBLISH_ERROR
+        d_error_pub = nh->advertise<std_msgs::Float32>("/d_error", 1, this);
+        th_error_pub = nh->advertise<std_msgs::Float32>("/th_error", 1, this);
+#endif
 #ifdef PUBLISH_MARKER
         ekf_pub = nh->advertise<visualization_msgs::Marker>("/ekf_result", 1, this);
-        ekf_pub_mm = nh->advertise<visualization_msgs::Marker>("/ekf_result_mm", 1, this);
         ekf_conf_pub = nh->advertise<visualization_msgs::Marker>("/ekf_result_conf", 1, this);
         initMarker();
 #endif
@@ -51,6 +56,7 @@ class EKFNode
         pose_pub = nh->advertise<geometry_msgs::PoseWithCovarianceStamped>("/ekf_pose", 1, this);
 #endif
     }
+    virtual ~EKFNode(){}
   private:
     ros::Subscriber odom_sub;
     ros::Subscriber teleop_sub;
@@ -71,6 +77,10 @@ class EKFNode
 
     std::default_random_engine generator;
     std::normal_distribution<double> distribution;
+#ifdef PUBLISH_ERROR
+    ros::Publisher d_error_pub;
+    ros::Publisher th_error_pub;
+#endif
 
 #ifdef PUBLISH_POSE
     ros::Publisher pose_pub;
@@ -99,9 +109,6 @@ class EKFNode
 #endif
 
 #ifdef PUBLISH_MARKER
-    ros::Publisher ekf_pub_mm;
-    visualization_msgs::Marker trajectory_mm;
-
     ros::Publisher ekf_pub;
     visualization_msgs::Marker trajectory;
 
@@ -118,19 +125,8 @@ class EKFNode
         trajectory.color.g = 0.0f;
         trajectory.color.b = 0.0f;
         trajectory.color.a = 0.5;
-        trajectory.scale.x = 0.01;
-        trajectory.scale.y = 0.01;
-
-        trajectory_mm.header.frame_id = "odom";
-        trajectory_mm.ns = "ekf_trajectory";
-        trajectory_mm.id = 1;
-        trajectory_mm.type = visualization_msgs::Marker::POINTS;
-        trajectory_mm.color.r = 0.0f;
-        trajectory_mm.color.g = 1.0f;
-        trajectory_mm.color.b = 1.0f;
-        trajectory_mm.color.a = 0.5;
-        trajectory_mm.scale.x = 0.01;
-        trajectory_mm.scale.y = 0.01;
+        trajectory.scale.x = 0.03;
+        trajectory.scale.y = 0.03;
 
         confidence.header.frame_id = "odom";
         confidence.ns = "ekf_confidence";
@@ -140,15 +136,6 @@ class EKFNode
         confidence.color.g = 0.5f;
         confidence.color.b = 0.5f;
         confidence.color.a = 0.4;
-    }
-
-    void updateMarker1()
-    {
-        trajectory_mm.header.stamp = ros::Time::now();
-        geometry_msgs::Point p;
-        p.x = ekf.x(0);
-        p.y = ekf.x(1);
-        trajectory_mm.points.push_back(p);
     }
 
     void updateMarker()
@@ -204,10 +191,7 @@ class EKFNode
             Eigen::Vector2d u;
             u << msg->linear.x, msg->angular.z;
             ekf.predict(dt, u);
-#ifdef PUBLISH_MARKER
-            updateMarker1();
-            ekf_pub_mm.publish(trajectory_mm);
-#endif
+
             if (have_ips)
             {
                 ekf.update(y_ips, R_ips);
@@ -215,6 +199,7 @@ class EKFNode
             }
             else
                 ekf.update(y_odom, R_odom);
+
 #ifdef PUBLISH_MARKER
             updateMarker();
             ekf_pub.publish(trajectory);
@@ -232,12 +217,23 @@ class EKFNode
         if (ekf.state == KFStates::RUN)
         {
             y_ips << msg->pose.pose.position.x, msg->pose.pose.position.y, tf::getYaw(msg->pose.pose.orientation);
-            std::cout << "ERROR" << std::endl;
-            std::cout << (ekf.x - y_ips).format(fmt) << std::endl;
+            Eigen::Vector3d x = ekf.x - y_ips;
+
+#ifdef PUBLISH_ERROR
+            std_msgs::Float32 d_err;
+            std_msgs::Float32 th_err;
+            d_err.data = sqrt(x(0)*x(0) + x(1)*x(1));
+            th_err.data = abs(x(2));
+            ROS_INFO("D_ERR: %e", d_err.data);
+            ROS_INFO("TH_ERR: %e", th_err.data);
+            d_error_pub.publish(d_err);
+            th_error_pub.publish(th_err);
+#endif
+
             y_ips(0) += distribution(generator);
             y_ips(1) += distribution(generator);
             // Don't degrade the yaw?
-            R_ips << 0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.005;
+            R_ips << 0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.001;
             have_ips = true;
         }
     }

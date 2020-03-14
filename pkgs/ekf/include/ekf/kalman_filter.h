@@ -37,6 +37,8 @@ public:
     void update(const Eigen::Vector3d &z,
                 const Eigen::Matrix3d &Q);
 
+    void fixYaw(Eigen::Vector3d &vec);
+
 private:
 
     // state transition matrix
@@ -47,6 +49,4 @@ private:
 
     // measurement matrix
     const Eigen::Matrix3d H;
-
-    void fixYaw(Eigen::Vector3d &vec);
 };
