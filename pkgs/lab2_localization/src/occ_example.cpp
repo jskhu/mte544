@@ -139,8 +139,8 @@ int main(int argc, char **argv) {
   // For some reason, can't add members to update states outside function
   // Add here instead
   update_states[UNKNOWN] = 0.5;
-  update_states[FREE] = 0.4;
-  update_states[OCCUPIED] = 0.7;
+  update_states[FREE] = 0.45;
+  update_states[OCCUPIED] = 0.8;
   occ_grid.init_publisher(n, "/occ");
 
   // Set the loop rate`
