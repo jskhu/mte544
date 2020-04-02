@@ -20,6 +20,13 @@ class Robot:
     def get_pose(self):
         return np.copy(self.pose)
 
+    def get_unit_heading(self):
+        robot_dist = np.linalg.norm(self.pose[:-1])
+        robot_heading = np.array(
+            [robot_dist * np.cos(self.pose[2]), robot_dist * np.sin(self.pose[2])])
+        unit_robot = robot_heading / np.linalg.norm(robot_heading)
+        return unit_robot
+
 
 class Circle:
     def __init__(self, p, r):

@@ -1,6 +1,7 @@
 import numpy as np
 import sys
 
+
 class Node:
     def __init__(self, val, id):
         self.val = val
@@ -8,18 +9,20 @@ class Node:
 
     def __str__(self):
         return str(self.val)
-    
+
     def __repr__(self):
         return str(self)
 
     def __eq__(self, other):
         return self.id == other.id
 
+
 class KNode(Node):
     def __init__(self, val, id):
         super().__init__(val, id)
         self.left = None
         self.right = None
+
 
 class KdTree:
     def __init__(self, points):
@@ -31,7 +34,7 @@ class KdTree:
 
     def init_build(self):
         self.root = self.build(self.points, self.nodes, 0)
-    
+
     def build(self, points, nodes, depth):
         if len(points) == 0:
             return None
@@ -42,8 +45,10 @@ class KdTree:
         sorted_nodes = nodes[sorted_indices]
         median_index = len(sorted_nodes) // 2
         node = sorted_nodes[median_index]
-        node.left = self.build(sorted_points[:median_index], sorted_nodes[:median_index], depth+1)
-        node.right = self.build(sorted_points[median_index+1:], sorted_nodes[median_index+1:], depth+1)
+        node.left = self.build(
+            sorted_points[:median_index], sorted_nodes[:median_index], depth+1)
+        node.right = self.build(
+            sorted_points[median_index+1:], sorted_nodes[median_index+1:], depth+1)
 
         return node
 

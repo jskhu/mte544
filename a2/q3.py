@@ -35,15 +35,16 @@ if __name__ == "__main__":
         ax.add_line(line_plt)
 
     path = a_star(rrt.nodes, rrt.get_connections(), rrt.nodes[0], rrt.nodes[1])
-    values = simulate(robot, m, path, ts)
+    values, headings = simulate(robot, m, path, ts)
     fig, ax = plt.subplots()
-    ax.plot(values[:,0], values[:,1])
+    ax.plot(values[:,0], values[:,1], color='g')
+
+    ax.quiver(values[::10,0], values[::10,1], headings[::10,0], -headings[::10,1])
     ax.imshow(pgm)
     ax.set_xlabel('Position (pixels)')
     ax.set_ylabel('Position (pixels)')
 
     ax.scatter(points[:,0], points[:,1])
-
     for i in range(len(path)-1):
         line_plt = lines.Line2D([path[i].val[0], path[i+1].val[0]], [path[i].val[1], path[i+1].val[1]], color='r')
         ax.add_line(line_plt)
@@ -63,14 +64,16 @@ if __name__ == "__main__":
         ax.add_line(line_plt)
 
     path = a_star(rrt.nodes, rrt.get_connections(), rrt.nodes[0], rrt.nodes[1])
-    values = simulate(robot, m, path, ts)
+    values, headings = simulate(robot, m, path, ts)
     fig, ax = plt.subplots()
-    ax.plot(values[:,0], values[:,1])
+    ax.plot(values[:,0], values[:,1], color='g')
+
+    ax.quiver(values[::10,0], values[::10,1], headings[::10,0], -headings[::10,1])
     ax.imshow(pgm)
     ax.set_xlabel('Position (pixels)')
     ax.set_ylabel('Position (pixels)')
-    ax.scatter(points[:,0], points[:,1])
 
+    ax.scatter(points[:,0], points[:,1])
     for i in range(len(path)-1):
         line_plt = lines.Line2D([path[i].val[0], path[i+1].val[0]], [path[i].val[1], path[i+1].val[1]], color='r')
         ax.add_line(line_plt)
@@ -90,14 +93,16 @@ if __name__ == "__main__":
         ax.add_line(line_plt)
 
     path = a_star(rrt.nodes, rrt.get_connections(), rrt.nodes[0], rrt.nodes[1])
-    values = simulate(robot, m, path, ts)
+    values, headings = simulate(robot, m, path, ts)
     fig, ax = plt.subplots()
-    ax.plot(values[:,0], values[:,1])
+    ax.plot(values[:,0], values[:,1], color='g')
+
+    ax.quiver(values[::10,0], values[::10,1], headings[::10,0], -headings[::10,1])
     ax.imshow(pgm)
     ax.set_xlabel('Position (pixels)')
     ax.set_ylabel('Position (pixels)')
-    ax.scatter(points[:,0], points[:,1])
 
+    ax.scatter(points[:,0], points[:,1])
     for i in range(len(path)-1):
         line_plt = lines.Line2D([path[i].val[0], path[i+1].val[0]], [path[i].val[1], path[i+1].val[1]], color='r')
         ax.add_line(line_plt)
@@ -117,9 +122,11 @@ if __name__ == "__main__":
         ax.add_line(line_plt)
 
     path = a_star(rrt.nodes, rrt.get_connections(), rrt.nodes[0], rrt.nodes[1])
-    values = simulate(robot, m, path, ts)
+    values, headings = simulate(robot, m, path, ts)
     fig, ax = plt.subplots()
-    ax.plot(values[:,0], values[:,1])
+    ax.plot(values[:,0], values[:,1], color='g')
+
+    ax.quiver(values[::10,0], values[::10,1], headings[::10,0], -headings[::10,1])
     ax.imshow(pgm)
     ax.set_xlabel('Position (pixels)')
     ax.set_ylabel('Position (pixels)')

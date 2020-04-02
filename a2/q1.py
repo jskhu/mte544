@@ -28,7 +28,10 @@ if __name__ == "__main__":
     grad_min = -10
 
     values = []
+    headings = []
+
     values.append(robot.get_pose())
+    headings.append(robot.get_unit_heading())
     for step, t in enumerate(ts):
         # calculate gradient
         # Add attraction
@@ -49,11 +52,7 @@ if __name__ == "__main__":
         grad[1] = max(grad_min, min(grad[1], grad_max))
 
         unit_grad = grad / np.linalg.norm(grad)
-
-        robot_dist = np.linalg.norm(robot.pose[:-1])
-        robot_heading = np.array(
-            [robot_dist * np.cos(robot.pose[2]), robot_dist * np.sin(robot.pose[2])])
-        unit_robot = robot_heading / np.linalg.norm(robot_heading)
+        unit_robot = robot.get_unit_heading()
 
         side = unit_grad[1] * unit_robot[0] - unit_grad[0] * unit_robot[1]
         angle = np.sign(side) * np.arccos(np.dot(unit_grad, unit_robot))
@@ -73,11 +72,15 @@ if __name__ == "__main__":
 
         robot.update(v, w, dt)
         values.append(robot.get_pose())
+        headings.append(robot.get_unit_heading())
 
     values = np.array(values)
+    headings = np.array(headings)
 
     fig, ax = plt.subplots()
     ax.plot(values[:, 0], values[:, 1])
+    ax.quiver(values[::10, 0], values[::10, 1],
+              headings[::10, 0], -headings[::10, 1])
     ax.imshow(pgm)
     ax.set_xlabel('Position (pixels)')
     ax.set_ylabel('Position (pixels)')

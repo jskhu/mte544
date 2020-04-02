@@ -79,9 +79,11 @@ if __name__ == "__main__":
 
     # Path 1
     path = a_star(tree.nodes, connections, tree.nodes[0], tree.nodes[-4])
-    values = simulate(robot, m, path, ts)
+    values, headings = simulate(robot, m, path, ts)
     fig, ax = plt.subplots()
-    ax.plot(values[:,0], values[:,1])
+    ax.plot(values[:,0], values[:,1], color='g')
+
+    ax.quiver(values[::10,0], values[::10,1], headings[::10,0], -headings[::10,1])
     ax.imshow(pgm)
     ax.set_xlabel('Position (pixels)')
     ax.set_ylabel('Position (pixels)')
@@ -93,9 +95,11 @@ if __name__ == "__main__":
 
     # Path 2
     path = a_star(tree.nodes, connections, tree.nodes[-4], tree.nodes[-3])
-    values = simulate(robot, m, path, ts)
+    values, headings = simulate(robot, m, path, ts)
     fig, ax = plt.subplots()
-    ax.plot(values[:,0], values[:,1])
+    ax.plot(values[:,0], values[:,1], color='g')
+
+    ax.quiver(values[::10,0], values[::10,1], headings[::10,0], -headings[::10,1])
     ax.imshow(pgm)
     ax.set_xlabel('Position (pixels)')
     ax.set_ylabel('Position (pixels)')
@@ -107,9 +111,11 @@ if __name__ == "__main__":
 
     # Path 3
     path = a_star(tree.nodes, connections, tree.nodes[-3], tree.nodes[-2])
-    values = simulate(robot, m, path, ts)
+    values, headings = simulate(robot, m, path, ts)
     fig, ax = plt.subplots()
-    ax.plot(values[:,0], values[:,1])
+    ax.plot(values[:,0], values[:,1], color='g')
+
+    ax.quiver(values[::10,0], values[::10,1], headings[::10,0], -headings[::10,1])
     ax.imshow(pgm)
     ax.set_xlabel('Position (pixels)')
     ax.set_ylabel('Position (pixels)')
@@ -121,9 +127,11 @@ if __name__ == "__main__":
 
     # Path 4
     path = a_star(tree.nodes, connections, tree.nodes[-2], tree.nodes[-1])
-    values = simulate(robot, m, path, ts)
+    values, headings = simulate(robot, m, path, ts)
     fig, ax = plt.subplots()
-    ax.plot(values[:,0], values[:,1])
+    ax.plot(values[:,0], values[:,1], color='g')
+
+    ax.quiver(values[::10,0], values[::10,1], headings[::10,0], -headings[::10,1])
     ax.imshow(pgm)
     ax.set_xlabel('Position (pixels)')
     ax.set_ylabel('Position (pixels)')
